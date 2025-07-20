@@ -1,4 +1,5 @@
 const http = require("http");
+const { json } = require("stream/consumers");
 const { URL } = require("url");
 
 let products = [
@@ -10,7 +11,7 @@ let products = [
 ];
 
 let users=[
-  {id:1,name:"Jhon",login:"Jhon1111",password:1234},
+  {id:1,name:"Jhon",login:1,password:1234},
   {id:2,name:"Alex",login:"Alex1111",password:7777},
   {id:3,name:"Mora",login:"Mora1234",password:7070},
   {id:4,name:"Lia",login:"Lia9090",password:4560},
@@ -100,6 +101,50 @@ const server = http.createServer((req, res) => {
       res.end(JSON.stringify(users))
     })   
   }
+  else if(url.startsWith("/users/login") && met=="GET"){
+    let info=''
+    req.on("data",(ch)=>{info+=ch})
+    req.on("end",(ch)=>{
+      info=JSON.parse(info)
+      let filtered=users.find((user)=>{      
+        if (user.login==info.login && user.password==info.password) {
+          return true
+        }      
+      })
+      if (filtered) {
+        res.end(JSON.stringify(filtered))
+      }
+      else{
+        res.end("Login yoki parol notogri")
+      }
+      
+    })
+  }
+  else if (url.startsWith("/users/delete") && met=="DELETE") {
+    
+      let info=''
+      req.on("data",(ch)=>{info+=ch})
+      req.on("end",(ch)=>{
+        info=JSON.parse(info)
+        let filtered=users.find((user)=>{      
+          if (user.login==info.login && user.password==info.password) {
+            return true
+          }      
+        })
+        if (filtered) {
+          let id=users.indexOf(filtered)
+          users.splice(id,1)
+          res.end(JSON.stringify(users))
+        }
+        else{
+          res.end("Login yoki parol notogri")
+        }
+        
+      })
+    
+
+}
+
 });
 
 server.listen(3000, () => {
